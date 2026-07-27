@@ -26,7 +26,11 @@ One column: album art (full width) on top, then track info, the controls, and th
 
 ![Vertical layout](screenshots/vertical.png)
 
-Set `controls: false` to hide the transport controls and divider. The widget then collapses to a single column, and the album art doubles as a play/pause button.
+### Without controls
+
+Set `controls: false` to hide the transport controls and divider. The widget collapses to a single column (album art beside the track info, with the progress bar below), and the album art itself doubles as a play/pause button. This works with any layout; shown here with `horizontal`.
+
+![Horizontal layout without controls](screenshots/horizontal-no-controls.png)
 
 ## Options
 
