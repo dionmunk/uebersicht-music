@@ -27,6 +27,10 @@ options =
   # How the track text (artist, song, album/year) is aligned in its column.
   contentAlign : "center"              # left | center | right
 
+  # Show the playing app's icon (Apple Music / Spotify) in the corner of the
+  # square layout. No effect in the horizontal or vertical layouts.
+  showAppIcon : true                   # true | false
+
   # Progress bar position.
   #   "full":    full-width bar below album art + metadata (default).
   #   "compact": bar tucked inside the track-info column, beneath the album/year line.
@@ -335,6 +339,35 @@ else
     position: relative
     z-index: 1
 
+// App badge: the icon of the app currently playing (Apple Music / Spotify).
+// Shown only in the square layout, tucked into the top-right over the art.
+.app-badge
+    display: none
+
+.layout-square.show-app-icon .app-badge
+    display: block
+    position: absolute
+    top: 10px
+    right: 10px
+    width: 22px
+    height: 22px
+    background-size: contain
+    background-repeat: no-repeat
+    background-position: center
+    cursor: pointer
+    z-index: 2
+    opacity: 0.5
+    transition: opacity .2s ease
+    // Standard widget shadow (drop-shadow since the badge is an image, matching
+    // the text-shadow used across the widgets). Übersicht strips filter from any
+    // rule that sets opacity unless the filter is declared here, so it stays.
+    filter: drop-shadow(0 1px 1px rgba(20, 1, 1, 0.2))
+
+// Full opacity on hover (re-declare the shadow so it survives, per above).
+.layout-square.show-app-icon .app-badge:hover
+    opacity: 1
+    filter: drop-shadow(0 1px 1px rgba(20, 1, 1, 0.2))
+
 .ctrl
     cursor: pointer
     position: relative
@@ -612,6 +645,7 @@ options : options
 
 render: () -> """
 <div class="container">
+    <div class="app-badge"></div>
     <div class="top-row">
         <div class="album-art">
             <div class="pause-overlay"><div class="pp-icon pp-pause"></div><div class="pp-icon pp-play"></div></div>
@@ -711,6 +745,11 @@ update: (output, domEl) ->
     div.find('.status-shuffle').on 'click', ->
       div.find('.status-shuffle').toggleClass('on') if send('shuffle')
     div.find('.status-repeat').on 'click', -> send('repeat')
+    # Clicking the app badge opens (or focuses) whichever app is playing.
+    appBundles = { Music: 'com.apple.Music', Spotify: 'com.spotify.client' }
+    div.find('.app-badge').on 'click', ->
+      bid = appBundles[self._musicApp]
+      fetch '/run/', method: 'POST', body: "open -b '#{bid}'" if bid
 
   # if widget enabled
   if @options.widgetEnabled
@@ -729,6 +768,7 @@ update: (output, domEl) ->
     playerState = values[10] or 'playing'
     shuffleOn = values[11]
     repeatMode = values[12]   # off | one | all (Spotify: off | all)
+    musicApp = values[13]     # Music | Spotify (drives the square-layout app badge)
 
     songNameHtml = values[1]
     if isLoved == 'true'
@@ -807,6 +847,15 @@ update: (output, domEl) ->
     # layout, never with controls shown, and never in a stacked layout.
     container.toggleClass('layout-compact', @options.progressBarPosition is 'compact' and not showControls and not isStacked)
     container.toggleClass('no-time', not @options.showTime)
+    container.toggleClass('show-app-icon', @options.showAppIcon isnt false)
+    # App badge (square layout): show the icon of whichever app is playing, and
+    # remember it so the badge's click handler can open that app.
+    @_musicApp = musicApp
+    if musicApp and musicApp isnt 'NA'
+      slug = musicApp.toLowerCase()
+      badgeUrl = "url(music.widget/lib/icons/app-#{slug}.png)"
+      $badge = div.find('.app-badge')
+      $badge.css('background-image', badgeUrl) if $badge.css('background-image') isnt badgeUrl
     # Track-text alignment (left | center | right); default to center on a bad value.
     align = if @options.contentAlign in ['left', 'center', 'right'] then @options.contentAlign else 'center'
     container

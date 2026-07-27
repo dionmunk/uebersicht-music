@@ -2,7 +2,7 @@ global artistName, songName, albumName, songYear, songDuration, currentPosition,
 global cacheKeys, cacheVals, dirtyKeys
 property enableLogging : false --- options: true | false
 
-set metaToGrab to {"artistName", "songName", "albumName", "songYear", "songDuration", "currentPosition", "coverURL", "songChanged", "isLoved", "darkMode", "playerState", "shuffle", "repeat"}
+set metaToGrab to {"artistName", "songName", "albumName", "songYear", "songDuration", "currentPosition", "coverURL", "songChanged", "isLoved", "darkMode", "playerState", "shuffle", "repeat", "musicApp"}
 set allKeys to metaToGrab & {"oldFilename"}
 
 try
@@ -31,6 +31,7 @@ if isMusicPlaying() is true then
 	getPlaybackModes()
 	cacheSet("shuffle", shuffleState)
 	cacheSet("repeat", repeatState)
+	cacheSet("musicApp", musicapp)
 
 	if didSongChange() is true then
 		if didCoverChange() is true then
