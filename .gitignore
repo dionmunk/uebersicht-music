@@ -1,0 +1,31 @@
+# Xcode #
+#########
+*.xcuserdata
+*.xcuserdatad/
+*.xcworkspace
+!default.xcworkspace
+*.pbxuser
+DerivedData
+build/
+*.ipa
+*.moved-aside
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+.Spotlight-V100
+.Trashes
+thumbs.db
+Thumbs.db
+
+# Generated SF Symbol icon masks — rendered on first run, not redistributed
+music.widget/lib/icons/
+
+# Runtime caches
+songMeta.plist
+cover*
+music.widget/lib/*.jpg
