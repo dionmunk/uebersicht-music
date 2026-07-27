@@ -2,6 +2,8 @@
 
 A music widget for [Übersicht](http://tracesof.net/uebersicht). It shows the track currently playing in Apple Music or Spotify: album art, artist, song, and album/year, with a progress bar and playback controls (previous / play-pause / next, plus shuffle and repeat). When a track is loved/favorited in Apple Music, a small star appears next to the title.
 
+There is no need to pay for a now-playing menu-bar app. With the Music widget and Übersicht you get the same at-a-glance display right on your desktop, free and open source, with effectively infinite customization: it is all just CSS and CoffeeScript you can edit to look and behave exactly how you want.
+
 Music originally grew out of the now-retired [Playbox](https://github.com/Pe8er/Playbox.widget) widget by [Pe8er](https://github.com/Pe8er), and is now its own widget with multiple layouts, interactive controls, and full theming.
 
 ## Layouts
