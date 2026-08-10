@@ -710,6 +710,17 @@ formatTime: (t, prefix = '') ->
 # Update the rendered output.
 update: (output, domEl) ->
 
+  # Tell layout-controller.widget which screen edge this widget was written for, so it
+  # can manage it without first dragging it into place. The controller stacks a column
+  # from the top by default; this widget sits at the foot of the screen, and saying so
+  # is what lets it be packed like anything else instead of opting out entirely.
+  #
+  # Only a default: once the widget has been dragged, where it was dropped wins and
+  # this is ignored. Set on every update rather than once, because Übersicht builds a
+  # fresh element when the widget reloads and a stale attribute would not survive.
+  domEl.setAttribute? 'data-layout-anchor',
+    if options.verticalPosition is 'bottom' then 'bottom' else 'top'
+
   div = $(domEl)
 
   # Bind transport clicks once. Classic widgets have no `run` global, so POST the
