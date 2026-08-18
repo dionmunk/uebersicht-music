@@ -726,8 +726,18 @@ update: (output, domEl) ->
   # Bind transport clicks once. Classic widgets have no `run` global, so POST the
   # command to Übersicht's same-origin /run/ endpoint; control.applescript acts on
   # whichever player (Music/Spotify) is active.
-  unless @_ppBound
-    @_ppBound = true
+  #
+  # Delegated from the widget's root element rather than bound to the buttons: the
+  # root is the one node Übersicht keeps, and everything inside it is thrown away and
+  # rebuilt from render() the first time the widget recovers from an error tick (any
+  # stderr from the command counts as one). Handlers sitting on the buttons go with
+  # that markup, and since the widget object survives, a plain "bound already" flag
+  # stays set and they are never restored: the controls go quietly dead until the
+  # widget is reloaded. Delegation lives on the surviving node, so it outlasts any
+  # number of re-renders. The guard remembers the element, not a boolean, so a
+  # genuinely new root still gets its own handlers.
+  unless @_ppBoundEl is domEl
+    @_ppBoundEl = domEl
     self = this
     # Leading-edge throttle, per command: the first click fires immediately, and
     # repeats within the window are ignored, so mashing a control can't flood the
@@ -745,20 +755,20 @@ update: (output, domEl) ->
       div.find('.container').toggleClass('is-paused') if send('playpause')
     # Single-column layout (controls hidden): the album art is the play/pause
     # button. With controls shown it's just artwork, so the click does nothing.
-    div.find('.album-art').on 'click', ->
+    div.on 'click', '.album-art', ->
       togglePlay() if self.options.controls is false
     # Transport buttons (shown when controls are enabled).
-    div.find('.ctrl-prev').on 'click', -> send('previous')
-    div.find('.ctrl-next').on 'click', -> send('next')
-    div.find('.ctrl-playpause').on 'click', -> togglePlay()
+    div.on 'click', '.ctrl-prev', -> send('previous')
+    div.on 'click', '.ctrl-next', -> send('next')
+    div.on 'click', '.ctrl-playpause', -> togglePlay()
     # Shuffle toggles (optimistically, only if it fired); repeat cycles server-side,
     # the 1s poll updates its glyph/lit state (Music has 3 states, no safe guess).
-    div.find('.status-shuffle').on 'click', ->
+    div.on 'click', '.status-shuffle', ->
       div.find('.status-shuffle').toggleClass('on') if send('shuffle')
-    div.find('.status-repeat').on 'click', -> send('repeat')
+    div.on 'click', '.status-repeat', -> send('repeat')
     # Clicking the app badge opens (or focuses) whichever app is playing.
     appBundles = { Music: 'com.apple.Music', Spotify: 'com.spotify.client' }
-    div.find('.app-badge').on 'click', ->
+    div.on 'click', '.app-badge', ->
       bid = appBundles[self._musicApp]
       fetch '/run/', method: 'POST', body: "open -b '#{bid}'" if bid
 
