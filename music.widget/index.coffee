@@ -103,6 +103,11 @@ else
     height: 12px
     margin-top: 8px
     clear: both
+    // Flex row: the time labels size to their own content and the bar absorbs
+    // whatever is left, so a long H:MM:SS value pushes the bar in instead of
+    // overflowing the widget. Applies to every layout, which all reuse this row.
+    display: flex
+    align-items: center
 
 // Compact layout: pull the bar (and times) up into the track-info column,
 // pinned to the bottom of the top-row so everything fits in the album-art's
@@ -123,9 +128,6 @@ else
 .layout-compact .song-name
     margin-top: 1px
     margin-bottom: 2px
-
-.layout-compact .bar-container
-    top: 4px   // bar sits 1px above the times, which stay flush with the album-art bottom
 
 .album-art
     width: @infoHeight
@@ -526,35 +528,36 @@ else
     float: left
     width: 218px
 
+// Time labels: min-width keeps the usual M:SS values pinned to the same 28px
+// box the absolute layout used, so short times look untouched; anything wider
+// (H:MM:SS on a long track) grows the label and shrinks the bar to match.
 .time-elapsed
-    position: absolute
-    top: 1px
-    left: 0
+    flex: 0 0 auto
+    min-width: 28px
+    white-space: nowrap
+    margin-right: 2px
     font-size: 10px
     font-weight: bold
     line-height: 1
-    width: 28px
     text-align: left
 
 .time-remaining
-    position: absolute
-    top: 1px
-    right: 0
+    flex: 0 0 auto
+    min-width: 28px
+    white-space: nowrap
+    margin-left: 3px
     font-size: 10px
     font-weight: bold
     line-height: 1
-    width: 28px
     text-align: right
     display: none
 
 .bar-container
-    width: calc(100% - 30px)
+    flex: 1 1 auto
+    min-width: 0   // without this the px-width .bar-progress sets a min-content floor
     height: @borderRadius
     border-radius: @borderRadius
     background: var(--level-base, rgba(#fff, .2))
-    position: absolute
-    top: 4px
-    left: 30px
     box-shadow: 0 1px 1px rgba(20, 1, 1, 0.10)   // base bar: matches text shadow
 
 .mode-remaining .time-elapsed
@@ -563,24 +566,14 @@ else
 .mode-remaining .time-remaining
     display: block
 
-.mode-remaining .bar-container
-    left: 0
-
 .mode-both .time-remaining
     display: block
-
-.mode-both .bar-container
-    width: calc(100% - 61px)   // 1px narrower on the right → 3px gap to time-remaining (2px on the elapsed side)
 
 // No-time: hide both time labels and let the bar fill the row.
 // Declared after the mode-* rules so it overrides them at equal specificity.
 .no-time .time-elapsed,
 .no-time .time-remaining
     display: none
-
-.no-time .bar-container
-    left: 0
-    width: 100%
 
 .bar
     height: @borderRadius
@@ -828,11 +821,13 @@ update: (output, domEl) ->
       applyTrackInfo()
     @_lastSongId = songId
 
-    # set progress bar width, measured from container so it tracks layout changes
-    barContainer = div.find('.bar-container')
-    barWidth = barContainer[0].clientWidth
-    songProgress = (currentPosition / songDuration) * barWidth
-    div.find('.bar-progress').css width: songProgress
+    # set progress bar width as a percentage: the container now flexes with the
+    # width of the time labels, and a percentage tracks that without re-measuring
+    dur = parseFloat(songDuration)
+    pos = parseFloat(currentPosition)
+    pct = if dur > 0 and not isNaN(pos) then (pos / dur) * 100 else 0
+    pct = Math.min(100, Math.max(0, pct))
+    div.find('.bar-progress').css width: "#{pct}%"
 
     # format time, clamped to 0
     elapsed = parseInt(currentPosition, 10)
