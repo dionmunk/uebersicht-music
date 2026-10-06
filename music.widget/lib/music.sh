@@ -13,4 +13,5 @@ if [ ! -f "$DIR/icons/app-music.png" ]; then
   swift "$DIR/render-appicons.swift" "$DIR/icons" >/dev/null 2>&1
 fi
 
+mkdir -p "$HOME/.config/ubersicht/music-widget"
 osascript "$DIR/getMusicData.applescript"
