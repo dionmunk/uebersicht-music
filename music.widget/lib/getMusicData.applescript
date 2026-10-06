@@ -15,7 +15,9 @@ on error e
 	return
 end try
 
-set songMetaFile to (mypath & "songMeta.plist" as string)
+-- State cache lives outside the widget folder (like layout-controller's layout.json),
+-- so the constant position writes never land in a directory Übersicht watches.
+set songMetaFile to ((POSIX path of (path to home folder)) & ".config/ubersicht/music-widget/songMeta.plist")
 ensurePlistFile()
 
 set cacheKeys to {}
